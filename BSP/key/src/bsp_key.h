@@ -19,8 +19,19 @@
 #include "main.h"
 #include <stdint.h>
 #include <stdio.h>
+
+/*				Core Os				layer*/
+#include "cmsis_os.h"
+//
+#include "queue.h" //specific file for operations
+#include "stm32f4xx_hal.h"
+#include "stm32f4xx_hal_gpio.h"
+
 /**********************Includes*******************/
 /**********************Defines**********************/
+extern QueueHandle_t key_queue;
+extern osThreadId_t Key_TaskHandle;
+extern const osThreadAttr_t Key_Task_attributes;
 typedef enum
 {
     KEY_OK = 0,
@@ -34,5 +45,8 @@ typedef enum
     KEY_PRESSED,
     KEY_NOT_PRESSED,
 } key_press_status_t;
+
+
 key_status_t key_read(key_press_status_t *key_value);
+void Key_Task(void *argument);
 #endif // !__BSP_KEY_H

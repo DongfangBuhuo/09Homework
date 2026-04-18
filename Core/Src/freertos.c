@@ -26,6 +26,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "bsp_key.h"
+#include "bsp_led.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -35,7 +36,7 @@ void Key_Task(void *argument);
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-QueueHandle_t key_queue;
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -57,12 +58,7 @@ const osThreadAttr_t defaultTask_attributes = {
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
-osThreadId_t Key_TaskHandle;
-const osThreadAttr_t Key_Task_attributes = {
-    .name = "Key_Task",
-    .stack_size = 128 * 4,
-    .priority = (osPriority_t)osPriorityHigh,
-};
+
 /* USER CODE END FunctionPrototypes */
 
 void StartDefaultTask(void *argument);
@@ -103,6 +99,7 @@ void MX_FREERTOS_Init(void)
 
     /* USER CODE BEGIN RTOS_THREADS */
     Key_TaskHandle = osThreadNew(Key_Task, NULL, &Key_Task_attributes);
+    Led_TaskHandle = osThreadNew(Led_Task, NULL, &Led_Task_attributes);
     /* add threads, ... */
     /* USER CODE END RTOS_THREADS */
 
@@ -122,14 +119,20 @@ void StartDefaultTask(void *argument)
 {
     /* USER CODE BEGIN StartDefaultTask */
     /* Infinite loop */
+    led_operation_t led_opes = LED_OFF;
     uint32_t count_tick = 0;
     for (;;)
     {
         if (NULL != key_queue)
         {
-            if (pdTRUE == xQueueReceive(key_queue, &count_tick, 0))
+            if (pdTRUE == xQueueReceive(key_queue, &count_tick, portMAX_DELAY))
             {
                 printf("Received key status from queue: %d\n", count_tick);
+                led_opes = LED_TOGGLE;
+                if (pdPASS == xQueueSendToFront(led_queue, &led_opes, 0))
+                {
+                    printf("Send Msg to Led Queue Successfully!!\r\n");
+                }
             }
         }
         osDelay(1);
@@ -139,45 +142,5 @@ void StartDefaultTask(void *argument)
 
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
-void Key_Task(void *argument)
-{
-    key_status_t key_status = KEY_OK;
-    key_press_status_t key_press_status = KEY_NOT_PRESSED;
-    uint32_t count_tick = 0;
-    key_queue = xQueueCreate(10, sizeof(count_tick));
-    if (NULL == key_queue)
-    {
-        printf("Failed to create key queue!\r\n");
-        vTaskDelete(NULL);
-    }
-    else
-    {
-        printf("Key queue created successfully!\r\n");
-    }
-    for (;;)
-    {
-        count_tick++;
-        key_status = key_read(&key_press_status);
-        if (KEY_OK == key_status)
-        {
-            if (KEY_PRESSED == key_press_status)
-            {
-                printf("Key Pressed!\r\n");
-                if (pdPASS == xQueueSendToFront(key_queue, &count_tick, 0))
-                {
-                    printf("Key status sent to queue successfully!\r\n");
-                }
-                else
-                {
-                    printf("Failed to send key status to queue!\r\n");
-                }
-            }
-        }
-        else
-        {
-            printf("Key Not Pressed!\r\n");
-        }
-        osDelay(500);
-    }
-}
+
 /* USER CODE END Application */
