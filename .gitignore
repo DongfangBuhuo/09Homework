@@ -1,0 +1,38 @@
+Objects/
+Listings/
+Output/
+*.o
+*.d
+*.crf
+*.elf
+*.axf
+*.map
+*.hex
+*.bin
+*.htm
+*.sct
+*.dep
+*.bak
+*.lnp
+*.plg
+
+# =============== Keil 用户本地配置（极易引发冲突，必须忽略） ===============
+*.uvguix.*
+*.uvoptx
+*.uvgui.*
+
+# =============== 调试器生成的日志和配置 ===============
+*.jlink
+*.JLinkScript
+JLinkLog.txt
+DebugConfig/
+
+# =============== STM32CubeMX 自动生成的中间文件 ===============
+*.mxproject
+.mxproject
+
+# =============== 其他编辑器/系统缓存 ===============
+.vscode/
+.DS_Store
+Thumbs.db
+EOF
